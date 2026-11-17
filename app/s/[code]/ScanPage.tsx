@@ -10,15 +10,15 @@ import { MIN, fmtTime } from "@/lib/time";
 
 const T = {
   es: {
-    who: "¿Quién eres?", pin: "PIN", enter: "Entrar", wrongPin: "PIN incorrecto", demoPin: "Demo: el PIN es",
-    open: "Tus tareas abiertas", none: "No tienes tareas abiertas.", start: "Iniciar tarea", task: "Tarea", order: "Número de orden",
+    who: "¿Quién eres?",
+    open: "Tus tareas abiertas", none: "No tienes tareas abiertas.", start: "Iniciar tarea", task: "Tarea", order: "Orden",
     machine: "Máquina", choose: "Elige…", go: "Iniciar", stamp: "Registrar", pause: "Pausar", resume: "Reanudar", done: "Terminar",
     since: "desde", paused: "en pausa", switchUser: "Cambiar de usuario", missing: "falta escaneo", saved: "¡Listo! Registrado.",
     notAllowed: "No estás asignado a esta estación.", back: "Volver al panel",
   },
   en: {
-    who: "Who are you?", pin: "PIN", enter: "Sign in", wrongPin: "Wrong PIN", demoPin: "Demo: the PIN is",
-    open: "Your open tasks", none: "You have no open tasks.", start: "Start a task", task: "Task", order: "Order number",
+    who: "Who are you?",
+    open: "Your open tasks", none: "You have no open tasks.", start: "Start a task", task: "Task", order: "Order",
     machine: "Dryer", choose: "Choose…", go: "Start", stamp: "Record", pause: "Pause", resume: "Resume", done: "Finish",
     since: "since", paused: "paused", switchUser: "Switch user", missing: "scan missing", saved: "Done! Recorded.",
     notAllowed: "You are not assigned to this station.", back: "Back to dashboard",
@@ -29,9 +29,6 @@ export default function ScanPage({ code }: { code: string }) {
   const { data, addEntry, updateEntry, addressed } = useLab();
   const [lang, setLang] = useState<"es" | "en">("es");
   const [worker, setWorker] = useState<Worker | null>(null);
-  const [picked, setPicked] = useState<Worker | null>(null);
-  const [pin, setPin] = useState("");
-  const [pinErr, setPinErr] = useState(false);
   const [taskKey, setTaskKey] = useState("");
   const [orderId, setOrderId] = useState("");
   const [machine, setMachine] = useState("");
@@ -56,10 +53,12 @@ export default function ScanPage({ code }: { code: string }) {
   const inHouse = data.orders
     .filter((o) => statusAt(o, data.now) !== "SHIPPED")
     .sort((a, b) => b.statusAt.RECEIVED! - a.statusAt.RECEIVED!);
-  const orderOptions = taskKey
-    ? [...inHouse].sort((a, b) => Number(missing.has(`${b.id}|${taskKey}`)) - Number(missing.has(`${a.id}|${taskKey}`)))
-    : inHouse;
-  const task = taskKey ? taskByKey(taskKey) : null;
+  // An order is flagged when it is missing a scan for any task at this station.
+  const flagged = (orderKey: string) => tasks.some((x) => missing.has(`${orderKey}|${x.key}`));
+  const orderOptions = [...inHouse].sort((a, b) => Number(flagged(b.id)) - Number(flagged(a.id)));
+  // A station with one task needs no second choice.
+  const effectiveTaskKey = tasks.length === 1 ? tasks[0].key : taskKey;
+  const task = effectiveTaskKey ? taskByKey(effectiveTaskKey) : null;
   const open = worker ? data.entries.filter((e) => e.workerId === worker.id && e.end === null) : [];
   const allowed = data.workers.filter((w) => w.active && (!w.stations || w.stations.includes(code)));
 
@@ -115,29 +114,11 @@ export default function ScanPage({ code }: { code: string }) {
       </div>
       {flash && <div className="goal ok" style={{ display: "block", textAlign: "center", padding: 10, fontSize: 16, marginBottom: 12 }}>{flash}</div>}
 
-      {!worker && !picked && (
+      {!worker && (
         <div className="card">
           <h2>{t.who}</h2>
           <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
-            {allowed.map((w) => <button key={w.id} style={big} onClick={() => setPicked(w)}>{w.name}</button>)}
-          </div>
-        </div>
-      )}
-
-      {!worker && picked && (
-        <div className="card">
-          <h2>{picked.name}</h2>
-          <input
-            inputMode="numeric" maxLength={4} value={pin} placeholder={t.pin} autoFocus
-            onChange={(e) => { setPin(e.target.value.replace(/\D/g, "")); setPinErr(false); }}
-            style={{ ...big, textAlign: "center", letterSpacing: ".4em" }}
-          />
-          {pinErr && <p className="goal bad">{t.wrongPin}</p>}
-          <p className="muted">{t.demoPin} {picked.pin}</p>
-          <div className="row">
-            <button onClick={() => { setPicked(null); setPin(""); }}>←</button>
-            <button className="primary" style={{ flex: 1, padding: 12, fontSize: 16 }}
-              onClick={() => (pin === picked.pin ? (setWorker(picked), setPin("")) : setPinErr(true))}>{t.enter}</button>
+            {allowed.map((w) => <button key={w.id} style={big} onClick={() => setWorker(w)}>{w.name}</button>)}
           </div>
         </div>
       )}
@@ -147,7 +128,7 @@ export default function ScanPage({ code }: { code: string }) {
           <div className="row" style={{ marginBottom: 12 }}>
             <strong style={{ fontSize: 16 }}>{worker.name}</strong>
             <span className="spacer" />
-            <button onClick={() => { setWorker(null); setPicked(null); }}>{t.switchUser}</button>
+            <button onClick={() => setWorker(null)}>{t.switchUser}</button>
           </div>
           <div className="card">
             <h2>{t.open}</h2>
@@ -168,22 +149,30 @@ export default function ScanPage({ code }: { code: string }) {
           </div>
           <div className="card mt">
             <h2>{t.start}</h2>
-            <label className="muted">{t.task}</label>
-            <select style={big} value={taskKey} onChange={(e) => { setTaskKey(e.target.value); setOrderId(""); }}>
+            <label className="muted">{t.order}</label>
+            <select style={big} value={orderId} onChange={(e) => setOrderId(e.target.value)}>
               <option value="">{t.choose}</option>
-              {tasks.map((x) => <option key={x.key} value={x.key}>{x.code} {name(x)}</option>)}
+              {orderOptions.slice(0, 40).map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.id} · {o.oz} oz{flagged(o.id) ? ` · ⚠ ${t.missing}` : ""}
+                </option>
+              ))}
             </select>
-            {task && (
+            {orderId && tasks.length > 1 && (
               <>
-                <label className="muted" style={{ display: "block", marginTop: 10 }}>{t.order}</label>
-                <select style={big} value={orderId} onChange={(e) => setOrderId(e.target.value)}>
+                <label className="muted" style={{ display: "block", marginTop: 10 }}>{t.task}</label>
+                <select style={big} value={taskKey} onChange={(e) => setTaskKey(e.target.value)}>
                   <option value="">{t.choose}</option>
-                  {orderOptions.slice(0, 40).map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.id} · {o.oz} oz{missing.has(`${o.id}|${task.key}`) ? ` · ⚠ ${t.missing}` : ""}
+                  {tasks.map((x) => (
+                    <option key={x.key} value={x.key}>
+                      {x.code} {name(x)}{missing.has(`${orderId}|${x.key}`) ? ` · ⚠ ${t.missing}` : ""}
                     </option>
                   ))}
                 </select>
+              </>
+            )}
+            {task && orderId && (
+              <>
                 {task.machine && (
                   <>
                     <label className="muted" style={{ display: "block", marginTop: 10 }}>{t.machine}</label>
@@ -193,7 +182,7 @@ export default function ScanPage({ code }: { code: string }) {
                     </select>
                   </>
                 )}
-                <button className="primary" style={{ ...big, marginTop: 14 }} disabled={!orderId || (task.machine && !machine)} onClick={start}>
+                <button className="primary" style={{ ...big, marginTop: 14 }} disabled={!orderId || !task || (task.machine && !machine)} onClick={start}>
                   {task.measure === "stamp" ? t.stamp : t.go}
                 </button>
               </>

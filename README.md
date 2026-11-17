@@ -19,8 +19,9 @@ labeling, packing) and mostly speak Spanish.
 
 ## How it works
 
-1. **A QR sticker at every station.** A worker scans it with a phone, picks their name, enters a PIN,
-   and starts or finishes a task on an order. The worker screens are Spanish first, with big buttons.
+1. **A QR sticker at every station.** A worker scans it with a phone, taps their name, picks the order
+   from a list of active orders, and starts or finishes the task. Orders with a missed scan at that station
+   are flagged at the top of the list. The worker screens are Spanish first, with big buttons.
 2. **Checkpoints.** Each key production step has a gate: once an order reaches a certain status, a scan
    for that step must exist. Tracking compliance is the share of orders with no missed checkpoint.
 3. **Evidence-based alerts.** Weights are keyed at the cutting and processing stations as part of the
@@ -67,6 +68,6 @@ npm run dev     # http://localhost:3000/lab-erp/
 ## Try it
 
 1. Open **Alerts** and note an order flagged on a batch still in the building.
-2. Open the station's scan page (from the Overview), sign in as a worker (the PIN is shown), and start
-   that task on the flagged order.
+2. Open the station's scan page (from the Overview), tap a worker's name, pick the flagged order (it sits
+   at the top of the list), and start the task.
 3. Back on **Alerts**, the miss now shows "Resolved by scan."

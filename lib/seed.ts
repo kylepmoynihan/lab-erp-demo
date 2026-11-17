@@ -16,14 +16,14 @@ function rng(seed: number) {
 }
 
 export const WORKERS: (Worker & { factor: number })[] = [
-  { id: "w1", name: "Ana Morales", pin: "1111", stations: null, active: true, factor: 0.85 },
-  { id: "w2", name: "Luis Herrera", pin: "2222", stations: ["rcv", "cut", "prc"], active: true, factor: 1.0 },
-  { id: "w3", name: "Marisol Vega", pin: "3333", stations: null, active: true, factor: 0.95 },
-  { id: "w4", name: "Diego Ramírez", pin: "4444", stations: ["dry", "lbl", "pck", "flx"], active: true, factor: 1.05 },
-  { id: "w5", name: "Rosa Delgado", pin: "5555", stations: ["cut", "prc", "pck"], active: true, factor: 1.45 },
-  { id: "w6", name: "Javier Soto", pin: "6666", stations: ["rcv", "dry"], active: true, factor: 1.1 },
-  { id: "w7", name: "Lupita Cruz", pin: "7777", stations: ["prc", "lbl", "pck", "flx"], active: true, factor: 0.9 },
-  { id: "w8", name: "Tomás Ortega", pin: "8888", stations: ["rcv", "cut", "dry"], active: true, factor: 1.25 },
+  { id: "w1", name: "Ana Morales", stations: null, active: true, factor: 0.85 },
+  { id: "w2", name: "Luis Herrera", stations: ["rcv", "cut", "prc"], active: true, factor: 1.0 },
+  { id: "w3", name: "Marisol Vega", stations: null, active: true, factor: 0.95 },
+  { id: "w4", name: "Diego Ramírez", stations: ["dry", "lbl", "pck", "flx"], active: true, factor: 1.05 },
+  { id: "w5", name: "Rosa Delgado", stations: ["cut", "prc", "pck"], active: true, factor: 1.45 },
+  { id: "w6", name: "Javier Soto", stations: ["rcv", "dry"], active: true, factor: 1.1 },
+  { id: "w7", name: "Lupita Cruz", stations: ["prc", "lbl", "pck", "flx"], active: true, factor: 0.9 },
+  { id: "w8", name: "Tomás Ortega", stations: ["rcv", "cut", "dry"], active: true, factor: 1.25 },
 ];
 
 // Base pace in minutes per ounce, or minutes per job for cleaning.

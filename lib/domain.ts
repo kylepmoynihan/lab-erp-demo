@@ -65,7 +65,7 @@ export const DRYERS: { id: string; size: DryerSize }[] = [
 ];
 export const dryerSize = (id?: string) => DRYERS.find((d) => d.id === id)?.size;
 
-export type Worker = { id: string; name: string; pin: string; stations: string[] | null; active: boolean };
+export type Worker = { id: string; name: string; stations: string[] | null; active: boolean };
 
 export type Entry = {
   id: string;
