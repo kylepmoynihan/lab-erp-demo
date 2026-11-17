@@ -204,7 +204,7 @@ export type Alert = {
   id: string;
   order: Order;
   task: Task;
-  kind: "missed" | "left-open";
+  kind: "missed" | "left-open" | "forgot-clockout";
   rule: string;
   detectedAt: number;
   statusAtDetect: string;
@@ -244,6 +244,17 @@ export function detectAlerts(d: Data): Alert[] {
       const detect = evidence + GOALS.clockoutGraceMin * MIN;
       if (open && detect <= d.now) out.push(makeAlert(d, o, taskByKey(key), "left-open", "Still clocked in after the weights were entered", detect));
     }
+  }
+  // Forgot to clock out: the worker scanned in at another station while this task was still open.
+  for (const e of d.entries) {
+    if (!e.forgotClockOut || e.end === null || e.end > d.now) continue;
+    const o = d.orders.find((x) => x.id === e.orders[0]);
+    if (!o) continue;
+    const other = STATIONS.find((s) => s.code === e.forgotClockOut);
+    const worker = d.workers.find((w) => w.id === e.workerId);
+    const a = makeAlert(d, o, taskByKey(e.task), "forgot-clockout",
+      `${worker?.name ?? "A worker"} scanned in at ${other?.en ?? e.forgotClockOut} without clocking out here`, e.end);
+    out.push({ ...a, id: `${a.id}|${e.id}` });
   }
   return out;
 }

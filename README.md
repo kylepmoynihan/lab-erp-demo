@@ -19,9 +19,11 @@ labeling, packing) and mostly speak Spanish.
 
 ## How it works
 
-1. **A QR sticker at every station.** A worker scans it with a phone, taps their name, picks the order
-   from a list of active orders, and starts or finishes the task. Orders with a missed scan at that station
-   are flagged at the top of the list. The worker screens are Spanish first, with big buttons.
+1. **A QR sticker at every station.** A worker scans it with a phone, taps their name, and picks the
+   order from a list of active orders. Orders with a missed scan at that station are flagged at the top of
+   the list. Scanning the same sticker again clocks them out. If they scan another station while still
+   clocked in, the open task is closed and flagged for operations to check the time. The worker screens are
+   Spanish first, with big buttons.
 2. **Checkpoints.** Each key production step has a gate: once an order reaches a certain status, a scan
    for that step must exist. Tracking compliance is the share of orders with no missed checkpoint.
 3. **Evidence-based alerts.** Weights are keyed at the cutting and processing stations as part of the

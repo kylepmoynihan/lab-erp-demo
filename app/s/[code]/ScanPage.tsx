@@ -11,17 +11,21 @@ import { MIN, fmtTime } from "@/lib/time";
 const T = {
   es: {
     who: "¿Quién eres?",
-    open: "Tus tareas abiertas", none: "No tienes tareas abiertas.", start: "Iniciar tarea", task: "Tarea", order: "Orden",
+    start: "Iniciar tarea", task: "Tarea", order: "Orden",
     machine: "Máquina", choose: "Elige…", go: "Iniciar", stamp: "Registrar", pause: "Pausar", resume: "Reanudar", done: "Terminar",
     since: "desde", paused: "en pausa", switchUser: "Cambiar de usuario", missing: "falta escaneo", saved: "¡Listo! Registrado.",
     notAllowed: "No estás asignado a esta estación.", back: "Volver al panel",
+    finished: "Tarea terminada", min: "min", ok: "Listo",
+    forgot: "Todavía tenías una tarea abierta en", told: "La cerramos y avisamos a operaciones.",
   },
   en: {
     who: "Who are you?",
-    open: "Your open tasks", none: "You have no open tasks.", start: "Start a task", task: "Task", order: "Order",
+    start: "Start a task", task: "Task", order: "Order",
     machine: "Dryer", choose: "Choose…", go: "Start", stamp: "Record", pause: "Pause", resume: "Resume", done: "Finish",
     since: "since", paused: "paused", switchUser: "Switch user", missing: "scan missing", saved: "Done! Recorded.",
     notAllowed: "You are not assigned to this station.", back: "Back to dashboard",
+    finished: "Task finished", min: "min", ok: "Done",
+    forgot: "You still had a task open at", told: "We closed it and let operations know.",
   },
 };
 
@@ -33,6 +37,9 @@ export default function ScanPage({ code }: { code: string }) {
   const [orderId, setOrderId] = useState("");
   const [machine, setMachine] = useState("");
   const [flash, setFlash] = useState("");
+  // Result of the scan: a task closed here (re-scan = clock out), or a task left open elsewhere.
+  const [closedHere, setClosedHere] = useState<Entry[]>([]);
+  const [closedElsewhere, setClosedElsewhere] = useState<Entry[]>([]);
   const t = T[lang];
   const station = STATIONS.find((s) => s.code === code);
   const tasks = TASKS.filter((x) => x.station === code);
@@ -59,7 +66,6 @@ export default function ScanPage({ code }: { code: string }) {
   // A station with one task needs no second choice.
   const effectiveTaskKey = tasks.length === 1 ? tasks[0].key : taskKey;
   const task = effectiveTaskKey ? taskByKey(effectiveTaskKey) : null;
-  const open = worker ? data.entries.filter((e) => e.workerId === worker.id && e.end === null) : [];
   const allowed = data.workers.filter((w) => w.active && (!w.stations || w.stations.includes(code)));
 
   const ping = (msg: string) => {
@@ -80,21 +86,33 @@ export default function ScanPage({ code }: { code: string }) {
       machine: machine || undefined,
       lot: task.key === "dry/B6" ? o?.lot : undefined,
     });
-    setTaskKey("");
+    reset();
+    ping(t.saved);
+  };
+  /** Picking your name is the second half of a scan. An open task here is finished by the re-scan;
+   *  an open task at another station is closed and flagged for operations. */
+  const selectWorker = (w: Worker) => {
+    const now = Date.now();
+    const mine = data.entries.filter((e) => e.workerId === w.id && e.end === null);
+    const here = mine.filter((e) => taskByKey(e.task).station === code);
+    const elsewhere = mine.filter((e) => taskByKey(e.task).station !== code);
+    const close = (e: Entry, patch: Partial<Entry> = {}) => {
+      const extra = e.pausedAt ? (now - e.pausedAt) / MIN : 0;
+      updateEntry(e.id, { end: now, pausedMin: e.pausedMin + extra, pausedAt: undefined, ...patch });
+    };
+    here.forEach((e) => close(e));
+    elsewhere.forEach((e) => close(e, { forgotClockOut: code }));
+    setClosedHere(here.map((e) => ({ ...e, end: now })));
+    setClosedElsewhere(elsewhere);
+    setWorker(w);
+  };
+  const reset = () => {
+    setWorker(null);
+    setClosedHere([]);
+    setClosedElsewhere([]);
     setOrderId("");
+    setTaskKey("");
     setMachine("");
-    ping(t.saved);
-  };
-  const finish = (e: Entry) => {
-    const now = Date.now();
-    const extra = e.pausedAt ? (now - e.pausedAt) / MIN : 0;
-    updateEntry(e.id, { end: now, pausedMin: e.pausedMin + extra, pausedAt: undefined });
-    ping(t.saved);
-  };
-  const togglePause = (e: Entry) => {
-    const now = Date.now();
-    if (e.pausedAt) updateEntry(e.id, { pausedMin: e.pausedMin + (now - e.pausedAt) / MIN, pausedAt: undefined });
-    else updateEntry(e.id, { pausedAt: now });
   };
 
   const big = { fontSize: 18, padding: "14px 16px", width: "100%" } as const;
@@ -118,7 +136,7 @@ export default function ScanPage({ code }: { code: string }) {
         <div className="card">
           <h2>{t.who}</h2>
           <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
-            {allowed.map((w) => <button key={w.id} style={big} onClick={() => setWorker(w)}>{w.name}</button>)}
+            {allowed.map((w) => <button key={w.id} style={big} onClick={() => selectWorker(w)}>{w.name}</button>)}
           </div>
         </div>
       )}
@@ -128,26 +146,27 @@ export default function ScanPage({ code }: { code: string }) {
           <div className="row" style={{ marginBottom: 12 }}>
             <strong style={{ fontSize: 16 }}>{worker.name}</strong>
             <span className="spacer" />
-            <button onClick={() => setWorker(null)}>{t.switchUser}</button>
+            <button onClick={reset}>{t.switchUser}</button>
           </div>
+          {closedElsewhere.map((e) => (
+            <div key={e.id} className="card" style={{ borderColor: "var(--warn)", marginBottom: 12 }}>
+              <strong>⚠ {t.forgot} {name(STATIONS.find((x) => x.code === taskByKey(e.task).station)!)}.</strong>
+              <div className="muted">{taskByKey(e.task).code} {name(taskByKey(e.task))} · {e.orders.join(", ")} · {t.told}</div>
+            </div>
+          ))}
+          {closedHere.length > 0 ? (
+            <div className="card" style={{ textAlign: "center" }}>
+              <div className="goal ok" style={{ fontSize: 18, padding: "8px 14px" }}>✓ {t.finished}</div>
+              {closedHere.map((e) => (
+                <p key={e.id} style={{ fontSize: 16 }}>
+                  <strong>{taskByKey(e.task).code} {name(taskByKey(e.task))}</strong> · {e.orders.join(", ")}<br />
+                  <span className="muted">{fmtTime(e.start)} · {Math.max(1, Math.round((e.end! - e.start) / MIN - e.pausedMin))} {t.min}</span>
+                </p>
+              ))}
+              <button className="primary" style={big} onClick={reset}>{t.ok}</button>
+            </div>
+          ) : (
           <div className="card">
-            <h2>{t.open}</h2>
-            {!open.length && <p className="muted">{t.none}</p>}
-            {open.map((e) => {
-              const x = taskByKey(e.task);
-              return (
-                <div key={e.id} style={{ borderTop: "1px solid var(--line)", padding: "10px 0" }}>
-                  <div><strong>{x.code} {name(x)}</strong> · {e.orders.join(", ")}{e.machine ? ` · ${e.machine}` : ""}</div>
-                  <div className="muted">{t.since} {fmtTime(e.start)}{e.pausedAt ? ` · ${t.paused}` : ""}</div>
-                  <div className="row" style={{ marginTop: 8 }}>
-                    <button style={{ flex: 1, padding: 12 }} onClick={() => togglePause(e)}>{e.pausedAt ? t.resume : t.pause}</button>
-                    <button className="primary" style={{ flex: 1, padding: 12 }} onClick={() => finish(e)}>{t.done}</button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="card mt">
             <h2>{t.start}</h2>
             <label className="muted">{t.order}</label>
             <select style={big} value={orderId} onChange={(e) => setOrderId(e.target.value)}>
@@ -188,6 +207,7 @@ export default function ScanPage({ code }: { code: string }) {
               </>
             )}
           </div>
+          )}
         </>
       )}
     </div>

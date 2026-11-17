@@ -56,6 +56,7 @@ function Alerts() {
                     <td>
                       {a.task.code} {a.task.en}
                       {a.kind === "left-open" && <> <span className="chip">left open</span></>}
+                      {a.kind === "forgot-clockout" && <> <span className="chip">forgot to clock out</span></>}
                     </td>
                     <td className="muted">{a.rule}</td>
                     <td title={`At detection: ${statusLabel(a.statusAtDetect as StatusCode)}`}>

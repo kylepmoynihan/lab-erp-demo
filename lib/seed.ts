@@ -204,6 +204,19 @@ function trim(full: { orders: Order[]; entries: Entry[] }, now: number, today: n
   );
   if (todays.length) todays[0] = Object.assign(todays[0], { end: null });
 
+  // Plant one forgotten clock-out today: a worker scanned in at another station while a task
+  // here was still open, so the open task was closed at that scan and flagged for operations.
+  const station = (key: string) => key.split("/")[0];
+  for (const e of entries) {
+    if (phxDay(e.start) !== today || e.end === null || e.autoClosed || e.task === "dry/B6" || e.end + 20 * MIN > now) continue;
+    const next = entries
+      .filter((x) => x.workerId === e.workerId && x.start > e.end! && phxDay(x.start) === today && station(x.task) !== station(e.task))
+      .sort((a, b) => a.start - b.start)[0];
+    if (!next || next.start - e.end > 3 * 60 * MIN) continue;
+    Object.assign(e, { end: next.start, forgotClockOut: station(next.task) });
+    break;
+  }
+
   // The 6 PM sweep closes anything left open on earlier days.
   entries = entries.map((e) =>
     e.end === null && phxDay(e.start) < today ? { ...e, end: at(phxDay(e.start), 18), autoClosed: true } : e,

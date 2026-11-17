@@ -80,6 +80,7 @@ export type Entry = {
   lot?: string;
   partners?: string[]; // co-workers named on a team entry
   autoClosed?: boolean; // left open, closed by the 6 PM sweep: counts as done, no duration
+  forgotClockOut?: string; // closed because the worker scanned in at another station (that station's code); ops reviews the time
   source: "seed" | "demo";
 };
 
