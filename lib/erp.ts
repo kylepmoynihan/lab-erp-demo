@@ -64,9 +64,9 @@ export const OBJECTS: Obj[] = [
   { id: "store_financials", name: "Store order financials", area: "ship", purpose: "Order totals captured from the online store, for true average order value and shipping margin by month.", fields: ["order", "subtotal", "discounts", "shipping charged", "tax", "total"], links: ["orders", "carrier_invoices"], credit: "kyle" },
 
   // Inventory
-  { id: "inventory_items", name: "Inventory items", area: "inventory", purpose: "Packaging and supplies: pouches, labels, boxes, cooler packs.", fields: ["item", "category", "unit", "pieces per package", "reorder point"], links: ["inventory_movements", "inventory_purchases", "products"] },
+  { id: "inventory_items", name: "Inventory items", area: "inventory", purpose: "Packaging and supplies: pouches, labels, boxes, cooler packs.", fields: ["item", "category", "unit", "pieces per package", "reorder point"], links: ["inventory_movements", "inventory_purchases", "products"], credit: "kyle" },
   { id: "inventory_movements", name: "Inventory movements", area: "inventory", purpose: "Every count, receipt and use, entered in individual pieces so on-hand is always a sum of movements.", fields: ["item", "type (count / receipt / use)", "pieces", "at", "by"], links: ["inventory_items"], credit: "kyle" },
-  { id: "inventory_purchases", name: "Purchases & vendors", area: "inventory", purpose: "Purchase orders and the vendors they go to.", fields: ["vendor", "item", "quantity", "ordered / received"], links: ["inventory_items"] },
+  { id: "inventory_purchases", name: "Purchases & vendors", area: "inventory", purpose: "Purchase orders and the vendors they go to.", fields: ["vendor", "item", "quantity", "ordered / received"], links: ["inventory_items"], credit: "kyle" },
 ];
 
 export const FLOW = [

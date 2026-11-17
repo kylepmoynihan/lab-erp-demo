@@ -3,7 +3,7 @@ import "./globals.css";
 import { LabProvider } from "@/lib/store";
 
 export const metadata: Metadata = {
-  title: "Lab Time Tracker",
+  title: "Lab ERP",
   description: "QR time tracking, checkpoint compliance and missed-scan alerts for a small production lab. Demo on sample data.",
 };
 

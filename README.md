@@ -1,20 +1,22 @@
-# Lab Time Tracker
+# Lab ERP
 
-QR time tracking, checkpoint compliance, and missed-scan alerts for a small production lab.
+The data model of a small production lab's ERP, with its time-tracking module running on sample data:
+QR time tracking, checkpoint compliance, and missed-scan alerts.
 
-**Live demo (fictional sample data):** https://kylepmoynihan.com/lab-tracker/
+**Live demo (fictional sample data):** https://kylepmoynihan.com/lab-erp/
 
-This is an open version of the lab time-tracking system Marcus Hansen and I built in 2026 for
-[Milk By Mom](https://kylepmoynihan.com/case-studies/milk-by-mom), a startup that freeze-dries breast milk.
-It runs inside the custom ERP the company moved to from Salesforce, which it adopted to get the audit
-trail it needed for cGMP certification. Product names, people, and data are left out. The workers,
+This is an open version of the ERP behind [Milk By Mom](https://kylepmoynihan.com/case-studies/milk-by-mom),
+a startup that freeze-dries breast milk. The company moved from Salesforce to a custom build to get the audit
+trail it needed for cGMP certification. The **ERP map** page lays out the full data model: orders, customers,
+coolers, freeze dryers, quality records, shipping costs, and inventory. The lab time tracker that Marcus Hansen
+and I built in 2026 is the module that runs in this demo. Product names, people, and data are left out. The workers,
 orders, and numbers in the demo are invented.
 
 ## The problem
 
-Labor is the lab's biggest cost, and nobody could see where the hours went. Workers move between
-stations all day (receiving, cutting, processing, the freeze dryers, packing), mostly speak Spanish,
-and paper timesheets missed most of it.
+Hourly lab labor is a sizeable share of cost of goods, and there was no reliable record of where those
+hours went. Workers move between stations all day (receiving, cutting, processing, the freeze dryers,
+labeling, packing) and mostly speak Spanish.
 
 ## How it works
 
@@ -35,7 +37,12 @@ and paper timesheets missed most of it.
 
 ## Who built what
 
-I designed the system from my background in Amazon fulfillment center operations: what the worker side
+The ERP's blueprint was the Salesforce org I architected for the company, including the cooler and
+freeze-dryer tracking I designed but couldn't fit into Salesforce. The company's quality consultant built
+the ERP's foundation from it. Inside the ERP I built the inventory module, the carrier invoice import that
+puts true shipping cost on each order, and the store order financials behind average order value.
+
+For the lab time tracker, I designed the system from my background in Amazon fulfillment center operations: what the worker side
 needed and what the operations side needed to see. Marcus built the tracking base (stations, tasks,
 worker logins, the scan app, and the QR sticker generator). I built the compliance model, the KPIs and
 benchmarks, the alerts and who-was-there roster, and the digest. We built it with Claude Code.
@@ -51,7 +58,7 @@ in your browser only and reset each day.
 
 ```bash
 npm install
-npm run dev     # http://localhost:3000/lab-tracker/
+npm run dev     # http://localhost:3000/lab-erp/
 ```
 
 ## Try it

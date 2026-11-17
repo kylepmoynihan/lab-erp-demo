@@ -1,4 +1,4 @@
--- Lab time tracker: production schema (Postgres / Supabase).
+-- Lab ERP, time-tracking module: production schema (Postgres / Supabase).
 -- The public demo runs the same logic in the browser on sample data; this file
 -- shows how the real system stores it. Times are timestamptz; the lab reports
 -- on America/Phoenix days (no daylight saving).

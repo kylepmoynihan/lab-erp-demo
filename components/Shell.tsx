@@ -22,7 +22,7 @@ export default function Shell({ children }: { children: ReactNode }) {
     <div className="shell">
       <header className="topbar noprint">
         <Link href="/" className="brand">
-          Lab Time Tracker<small>demo · sample data</small>
+          Lab ERP<small>demo · sample data</small>
         </Link>
         <nav className="nav">
           {LINKS.map(([href, label]) => (
