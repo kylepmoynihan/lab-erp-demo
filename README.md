@@ -48,7 +48,7 @@ labeling, packing) and mostly speak Spanish.
 4. **Planned and built.** I planned and built inventory, carrier invoice costing, store order financials
    for average order value, and the compliance model, alerts and digest on top of the time tracker.
 
-We built with Claude Code.
+Marcus and I built our parts with Claude Code.
 
 ## Stack
 
