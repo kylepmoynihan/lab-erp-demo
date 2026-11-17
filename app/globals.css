@@ -20,7 +20,7 @@ a:hover { text-decoration: underline; }
 h1 { font-size: 22px; margin: 0 0 4px; }
 h2 { font-size: 16px; margin: 0 0 10px; }
 .sub { color: var(--muted); margin: 0 0 18px; }
-.shell { max-width: 1180px; margin: 0 auto; padding: 0 16px 48px; }
+.shell { max-width: 1180px; margin: 0 auto; padding: 0 16px 48px; overflow-x: clip; }
 .topbar { display: flex; align-items: center; gap: 18px; padding: 14px 0; border-bottom: 1px solid var(--line); margin-bottom: 22px; flex-wrap: wrap; }
 .brand { font-weight: 700; color: var(--ink); }
 .brand small { color: var(--muted); font-weight: 400; margin-left: 6px; }
@@ -29,10 +29,10 @@ h2 { font-size: 16px; margin: 0 0 10px; }
 .nav a.on { background: var(--chip); color: var(--ink); font-weight: 600; }
 .nav a:hover { text-decoration: none; color: var(--ink); }
 .grid { display: grid; gap: 14px; }
-.g4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-.g3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.g2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.g4 { grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; overflow-x: auto; }
 .tile .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
 .tile .value { font-size: 28px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
 .tile .note { color: var(--muted); font-size: 12px; margin-top: 4px; }
