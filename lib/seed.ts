@@ -19,15 +19,15 @@ export const WORKERS: (Worker & { factor: number })[] = [
   { id: "w1", name: "Ana Morales", pin: "1111", stations: null, active: true, factor: 0.85 },
   { id: "w2", name: "Luis Herrera", pin: "2222", stations: ["rcv", "cut", "prc"], active: true, factor: 1.0 },
   { id: "w3", name: "Marisol Vega", pin: "3333", stations: null, active: true, factor: 0.95 },
-  { id: "w4", name: "Diego Ramírez", pin: "4444", stations: ["dry", "pck"], active: true, factor: 1.05 },
+  { id: "w4", name: "Diego Ramírez", pin: "4444", stations: ["dry", "lbl", "pck", "flx"], active: true, factor: 1.05 },
   { id: "w5", name: "Rosa Delgado", pin: "5555", stations: ["cut", "prc", "pck"], active: true, factor: 1.45 },
   { id: "w6", name: "Javier Soto", pin: "6666", stations: ["rcv", "dry"], active: true, factor: 1.1 },
-  { id: "w7", name: "Lupita Cruz", pin: "7777", stations: ["prc", "pck"], active: true, factor: 0.9 },
+  { id: "w7", name: "Lupita Cruz", pin: "7777", stations: ["prc", "lbl", "pck", "flx"], active: true, factor: 0.9 },
   { id: "w8", name: "Tomás Ortega", pin: "8888", stations: ["rcv", "cut", "dry"], active: true, factor: 1.25 },
 ];
 
 // Base pace in minutes per ounce, or minutes per job for cleaning.
-const BASE = { "rcv/B1": 0.03, "cut/B3": 0.1, "prc/B5": 0.08, "dry/A1": 0.03, "pck/P5": 0.12 };
+const BASE = { "rcv/B1": 0.03, "cut/B3": 0.1, "prc/B5": 0.08, "dry/A1": 0.03, "pck/P5": 0.12, "lbl/P3": 0.05 };
 const CLEAN_MIN = { M: 20, L: 28, XL: 38 };
 
 export type Dataset = { workers: Worker[]; orders: Order[]; entries: Entry[]; now: number };
@@ -155,7 +155,11 @@ export function generate(realNow: number): Dataset {
       const packStart = prepAt + between(30, 240) * MIN;
       const packer = pick(canWork("pck"));
       const packEnd = packStart + o.oz * BASE["pck/P5"] * packer.factor * noise() * MIN;
-      const shipAt = packEnd + between(60, 180) * MIN;
+      const labeler = pick(canWork("lbl"));
+      const lblStart = packEnd + between(10, 30) * MIN;
+      const lblEnd = lblStart + o.oz * BASE["lbl/P3"] * labeler.factor * noise() * MIN;
+      if (r() > 0.1) addEntry({ workerId: labeler.id, task: "lbl/P3", start: lblStart, end: lblEnd, orders: [o.id] });
+      const shipAt = lblEnd + between(30, 120) * MIN;
       step({ workerId: packer.id, task: "pck/P5", start: packStart, end: packEnd, orders: [o.id] }, shipAt);
       o.statusAt.SHIPPED = shipAt;
     }

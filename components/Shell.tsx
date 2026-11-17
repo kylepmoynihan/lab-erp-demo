@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useLab } from "@/lib/store";
 
 const LINKS = [
+  ["/erp/", "ERP map"],
   ["/", "Overview"],
   ["/admin/stats/", "Stats"],
   ["/admin/alerts/", "Alerts"],

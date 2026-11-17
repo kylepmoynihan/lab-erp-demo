@@ -17,11 +17,13 @@ export const statusLabel = (s: StatusCode) => STATUSES.find((x) => x.code === s)
 
 export type Station = { code: string; en: string; es: string };
 export const STATIONS: Station[] = [
-  { code: "rcv", en: "Receiving", es: "Recepción" },
+  { code: "rcv", en: "Intake / Receiving", es: "Recepción" },
   { code: "cut", en: "Cutting Station", es: "Estación de Corte" },
-  { code: "prc", en: "Processing Station", es: "Estación de Proceso" },
-  { code: "dry", en: "Dryers", es: "Liofilizadoras" },
+  { code: "prc", en: "Processing Station", es: "Procesamiento" },
+  { code: "dry", en: "Machine Station (freeze dryers)", es: "Estación de Máquinas" },
+  { code: "lbl", en: "Labeling", es: "Etiquetado" },
   { code: "pck", en: "Packing Station", es: "Estación de Empaque" },
+  { code: "flx", en: "Flex", es: "Tareas Flexibles" },
 ];
 
 export type Measure = "oz" | "job" | "stamp" | "batch";
@@ -41,11 +43,13 @@ export type Task = {
 export const TASKS: Task[] = [
   { key: "rcv/B1", station: "rcv", code: "B1", en: "Receive and weigh shipments", es: "Recibir y pesar envíos", measure: "batch", gate: "DRYING" },
   { key: "cut/B3", station: "cut", code: "B3", en: "Cut / remove plastic", es: "Cortar / retirar plástico", measure: "oz", gate: "DRYING" },
-  { key: "prc/B5", station: "prc", code: "B5", en: "Blend and pour trays", es: "Licuar y servir charolas", measure: "oz", gate: "DRYING" },
-  { key: "dry/B6", station: "dry", code: "B6", en: "Load dryer", es: "Cargar máquina", measure: "stamp", machine: true },
+  { key: "prc/B5", station: "prc", code: "B5", en: "Process and pour trays", es: "Procesar y servir charolas", measure: "oz", gate: "DRYING" },
+  { key: "dry/B6", station: "dry", code: "B6", en: "Load machine", es: "Cargar máquina", measure: "stamp", machine: true },
   { key: "dry/A1", station: "dry", code: "A1", en: "Unload and inspect batch", es: "Descargar e inspeccionar lote", measure: "oz", machine: true, gate: "FINAL_PREP" },
-  { key: "dry/A7", station: "dry", code: "A7", en: "Clean dryer", es: "Limpiar máquina", measure: "job", machine: true, gate: "FINAL_PREP" },
+  { key: "dry/A7", station: "dry", code: "A7", en: "Clean machine", es: "Limpiar máquina", measure: "job", machine: true, gate: "FINAL_PREP" },
   { key: "pck/P5", station: "pck", code: "P5", en: "Pack pouches", es: "Empacar sobres", measure: "oz", gate: "SHIPPED" },
+  { key: "lbl/P3", station: "lbl", code: "P3", en: "Label and box", es: "Etiquetar y encajar", measure: "oz" },
+  { key: "flx/F4", station: "flx", code: "F4", en: "Data entry", es: "Captura de datos", measure: "job" },
 ];
 export const taskByKey = (k: string) => TASKS.find((t) => t.key === k)!;
 export const CHECKPOINTS = TASKS.filter((t) => t.gate);
