@@ -8,8 +8,7 @@ QR time tracking, checkpoint compliance, and missed-scan alerts.
 This is an open version of the ERP behind [Milk By Mom](https://kylepmoynihan.com/case-studies/milk-by-mom),
 a startup that freeze-dries breast milk. The company moved from Salesforce to a custom build to get the audit
 trail it needed for cGMP certification. The **ERP map** page lays out the full data model: orders, customers,
-coolers, freeze dryers, quality records, shipping costs, and inventory. The lab time tracker that Marcus Hansen
-and I built in 2026 is the module that runs in this demo. Product names, people, and data are left out. The workers,
+coolers, freeze dryers, quality records, shipping costs, and inventory. The lab time tracker is the module that runs in this demo. Product names, people, and data are left out. The workers,
 orders, and numbers in the demo are invented.
 
 ## The problem
@@ -35,17 +34,21 @@ labeling, packing) and mostly speak Spanish.
 5. **A twice-daily digest** at 12:30 and 4:30 PM to the manager and leads (never floor staff). It
    replaced one email per miss, which people had learned to ignore.
 
-## Who built what
+## How this got built
 
-The ERP's blueprint was the Salesforce org I architected for the company, including the cooler and
-freeze-dryer tracking I designed but couldn't fit into Salesforce. The company's quality consultant built
-the ERP's foundation from it. Inside the ERP I built the inventory module, the carrier invoice import that
-puts true shipping cost on each order, and the store order financials behind average order value.
+1. **Architected.** I architected the company's Salesforce org: the order model, orders flowing in from
+   the online store, and status emails to customers as an order moves. Then I gathered the requirements
+   for the next big pieces, machine and cooler tracking.
+2. **Foundation.** The company needed a full audit trail for cGMP certification and moved to a custom
+   build. Its quality consultant chose the stack and built the ERP's foundation from that architecture,
+   including cooler and machine tracking.
+3. **Designed with Marcus.** I specified what the lab time tracker had to do for workers on the floor and
+   for operations, from my time in Amazon fulfillment centers. Marcus Hansen worked out how to build it:
+   the scan app, worker sign-in and QR stickers.
+4. **Planned and built.** I planned and built inventory, carrier invoice costing, store order financials
+   for average order value, and the compliance model, alerts and digest on top of the time tracker.
 
-For the lab time tracker, I designed the system from my background in Amazon fulfillment center operations: what the worker side
-needed and what the operations side needed to see. Marcus built the tracking base (stations, tasks,
-worker logins, the scan app, and the QR sticker generator). I built the compliance model, the KPIs and
-benchmarks, the alerts and who-was-there roster, and the digest. We built it with Claude Code.
+We built with Claude Code.
 
 ## Stack
 
